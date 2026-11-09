@@ -591,13 +591,23 @@ local function highlight_first_column(text)
 	return table.concat(lines, "\n")
 end
 
-local function render_output(output, job, highlight)
+-- Key hints on the preview's last line. Database files have no summary view.
+local function key_hint(file_type)
+	if file_type == "duckdb" then
+		return "J/K rows · H/L columns"
+	end
+	return "T summary/table · J/K rows · H/L columns"
+end
+
+local function render_output(output, job, file_type, mode)
 	local cleaned = output.stdout and output.stdout:gsub("\r", "") or "[no output]"
-	if highlight then
+	if mode == "summarized" and file_type ~= "duckdb" then
 		cleaned = highlight_first_column(cleaned)
 	end
+	local a = job.area
 	ya.preview_widget(job, {
-		ui.Text.parse(cleaned):area(job.area),
+		ui.Text.parse(cleaned):area(ui.Rect({ x = a.x, y = a.y, w = a.w, h = math.max(0, a.h - 1) })),
+		ui.Line(key_hint(file_type)):fg("darkgray"):area(ui.Rect({ x = a.x, y = a.y + a.h - 1, w = a.w, h = 1 })),
 	})
 end
 
@@ -807,7 +817,7 @@ function M:peek(job)
 	end
 
 	if args.target == args.file_url and args.mode == "summarized" and not args.use_cache then
-		render_output(output, job, args.file_type ~= "duckdb")
+		render_output(output, job, args.file_type, args.mode)
 		while not is_on_list("completed", args.cache_str) do
 			ya.sleep(0.2)
 		end
@@ -816,7 +826,7 @@ function M:peek(job)
 		return require("duckdb"):peek(job)
 	end
 
-	render_output(output, job, args.mode == "summarized" and args.file_type ~= "duckdb")
+	render_output(output, job, args.file_type, args.mode)
 end
 
 -- Seek only scrolls; it stops at the top. Switching views is `plugin duckdb -- toggle`.
