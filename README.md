@@ -1,6 +1,6 @@
 # duckdb.yazi
 
-> **This is a fork** of [wylie102/duckdb.yazi](https://github.com/wylie102/duckdb.yazi), which has had no commits since May 2025. It merges open upstream fixes for yazi 26 and DuckDB 1.5+ (PRs #30, #33, #35) and changes a few things:
+> **This is a fork** of [wylie102/duckdb.yazi](https://github.com/wylie102/duckdb.yazi). It merges open upstream fixes for yazi 26 and DuckDB 1.5+ (PRs #30, #33, #35) and changes a few things:
 >
 > - Switch between summary and table with a key: `plugin duckdb -- toggle`. Scrolling (keys or mouse wheel) only scrolls and stops at the top; it no longer switches views.
 > - Column names are bold blue in the summary view.
