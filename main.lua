@@ -566,8 +566,27 @@ local function generate_peek_query(target, job, limit, offset, file_type, cache_
 	end
 end
 
-local function render_output(output, job)
+-- Bold + blue the first cell of each body row (the column names in the
+-- summarized view). DuckDB's highlight colours only go by data type, so this
+-- edits its output instead: a body cell is "│", grey padding, then the value.
+local function highlight_first_column(text)
+	local lines, in_body = {}, false
+	for line in (text .. "\n"):gmatch("(.-)\n") do
+		if line:find("├", 1, true) then
+			in_body = true
+		elseif in_body then
+			line = line:gsub("(│\27%[00m\27%[90m *\27%[00m)([^\27]+)", "%1\27[1;34m%2\27[0m", 1)
+		end
+		lines[#lines + 1] = line
+	end
+	return table.concat(lines, "\n")
+end
+
+local function render_output(output, job, highlight)
 	local cleaned = output.stdout and output.stdout:gsub("\r", "") or "[no output]"
+	if highlight then
+		cleaned = highlight_first_column(cleaned)
+	end
 	ya.preview_widget(job, {
 		ui.Text.parse(cleaned):area(job.area),
 	})
@@ -779,7 +798,7 @@ function M:peek(job)
 	end
 
 	if args.target == args.file_url and args.mode == "summarized" and not args.use_cache then
-		render_output(output, job)
+		render_output(output, job, args.file_type ~= "duckdb")
 		while not is_on_list("completed", args.cache_str) do
 			ya.sleep(0.2)
 		end
@@ -788,7 +807,7 @@ function M:peek(job)
 		return require("duckdb"):peek(job)
 	end
 
-	render_output(output, job)
+	render_output(output, job, args.mode == "summarized" and args.file_type ~= "duckdb")
 end
 
 -- Seek, also triggers mode change if skip negative.
