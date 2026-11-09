@@ -1,5 +1,30 @@
 # duckdb.yazi
 
+> **This is a fork** of [wylie102/duckdb.yazi](https://github.com/wylie102/duckdb.yazi), which has had no commits since May 2025. It merges open upstream fixes for yazi 26 and DuckDB 1.5+ (PRs #30, #33, #35) and changes a few things:
+>
+> - Switch between summary and table with a key: `plugin duckdb -- toggle`. Scrolling (keys or mouse wheel) only scrolls and stops at the top; it no longer switches views.
+> - Column names are bold blue in the summary view.
+> - A key-hint line at the bottom of the preview.
+>
+> Install with `ya pkg add adschem/duckdb`. Keymaps for yazi 26 need `--` before arguments:
+>
+> ```toml
+> [[mgr.prepend_keymap]]
+> on = "T"
+> run = "plugin duckdb -- toggle"
+> desc = "Toggle data preview: summary / table"
+>
+> [[mgr.prepend_keymap]]
+> on = "H"
+> run = "plugin duckdb -- -1"
+> desc = "Scroll preview one column left"
+>
+> [[mgr.prepend_keymap]]
+> on = "L"
+> run = "plugin duckdb -- +1"
+> desc = "Scroll preview one column right"
+> ```
+
 **Uses  [duckdb](https://github.com/duckdb/duckdb) to quickly preview and summarize data files in [yazi](https://github.com/sxyazi/yazi)!**
 
 <br>
