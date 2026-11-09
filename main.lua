@@ -798,7 +798,11 @@ function M:seek(job)
 	local units = job.units or 0
 	local new_skip = current_skip + units
 
-	if new_skip < 0 then
+	if new_skip < 0 and current_skip > 0 then
+		-- A multi-line scroll (e.g. mouse wheel) overshot the top: stop there.
+		-- Only a scroll that starts at the top toggles the mode.
+		ya.emit("peek", { OFFSET_BASE, only_if = job.file.url })
+	elseif new_skip < 0 then
 		-- Toggle preview mode
 		local mode = get_opts("mode")
 		local new_mode = (mode == "summarized") and "standard" or "summarized"
