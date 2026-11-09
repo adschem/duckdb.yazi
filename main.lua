@@ -571,7 +571,8 @@ end
 -- edits its output instead: a body cell is "│", grey padding, then the value.
 local function highlight_first_column(text)
 	local lines, in_body = {}, false
-	for line in (text .. "\n"):gmatch("(.-)\n") do
+	for raw in (text .. "\n"):gmatch("(.-)\n") do
+		local line = raw
 		if line:find("├", 1, true) then
 			in_body = true
 		elseif in_body then
