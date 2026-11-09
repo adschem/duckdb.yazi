@@ -123,6 +123,14 @@ end)
 
 function M:entry(job)
 	local arg = job.args and job.args[1]
+	if arg == "toggle" then
+		local mode = get_opts("mode")
+		set_opts("mode", (mode == "summarized") and "standard" or "summarized")
+		set_opts("mode_changed", true)
+		-- Back to the top of the other view.
+		ya.emit("peek", { 50, force = true })
+		return
+	end
 	if arg ~= "+1" and arg ~= "-1" then
 		return duckdb_opener(arg)
 	end
@@ -811,28 +819,14 @@ function M:peek(job)
 	render_output(output, job, args.mode == "summarized" and args.file_type ~= "duckdb")
 end
 
--- Seek, also triggers mode change if skip negative.
+-- Seek only scrolls; it stops at the top. Switching views is `plugin duckdb -- toggle`.
 function M:seek(job)
 	local OFFSET_BASE = 50
 	local current_skip = math.max(0, cx.active.preview.skip - OFFSET_BASE)
 	local units = job.units or 0
-	local new_skip = current_skip + units
+	local new_skip = math.max(0, current_skip + units)
 
-	if new_skip < 0 and current_skip > 0 then
-		-- A multi-line scroll (e.g. mouse wheel) overshot the top: stop there.
-		-- Only a scroll that starts at the top toggles the mode.
-		ya.emit("peek", { OFFSET_BASE, only_if = job.file.url })
-	elseif new_skip < 0 then
-		-- Toggle preview mode
-		local mode = get_opts("mode")
-		local new_mode = (mode == "summarized") and "standard" or "summarized"
-		set_opts("mode", new_mode)
-		set_opts("mode_changed", true)
-		-- Trigger re-peek
-		ya.emit("peek", { OFFSET_BASE, only_if = job.file.url })
-	else
-		ya.emit("peek", { new_skip + OFFSET_BASE, only_if = job.file.url })
-	end
+	ya.emit("peek", { new_skip + OFFSET_BASE, only_if = job.file.url })
 end
 
 return M
